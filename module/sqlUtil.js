@@ -29,22 +29,31 @@ connect();
 
 
 module.exports.query =
-    function query(querySql, callBack) {
-        connection.query(querySql, (error, results, fields) => {
+    function query(querySql, callBack, selectOne) {
+        connection.query(querySql, (error, results,) => {
             if (error) {
+                console.log('The error is: ', error);
                 callBack(true, {eCode: 10001});
             } else {
-                callBack(false, {eCode: 10000, eMsg: '', data: results});
+                if (results == null || results.length < 1) {
+                    callBack(true, {eCode: 10001});
+                } else {
+                    if (selectOne && results instanceof Array) {
+                        callBack(false, {eCode: 10000, eMsg: '', data: results[0]});
+                    } else {
+                        callBack(false, {eCode: 10000, eMsg: '', data: results});
+                    }
+                }
             }
         });
     };
 
-module.exports.add = function add(addSql, addParams) {
+module.exports.add = function add(addSql, addParams, callBack) {
     connection.query(addSql, addParams, (error, result) => {
-        if (error) throw error;
         console.log('The solution is: ', result);
+        console.log('The error is: ', error);
+        callBack(error);
     });
-    connection.end();
 };
 
 module.exports.update = function update(modSql, modSqlParams) {
@@ -52,7 +61,6 @@ module.exports.update = function update(modSql, modSqlParams) {
         if (err) throw  err;
         console.log(res);
     });
-    connection.end();
 };
 
 module.exports.deleteSql = function deleteSql(delSql) {
@@ -60,7 +68,6 @@ module.exports.deleteSql = function deleteSql(delSql) {
         if (err) throw  err;
         console.log(res);
     });
-    connection.end();
 };
 
 
